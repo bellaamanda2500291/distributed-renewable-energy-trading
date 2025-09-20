@@ -151,7 +151,7 @@
   (location { latitude: uint, longitude: uint }))
   
   (let (
-    (consumer-id (generate-offer-id tx-sender monthly-consumption stacks-block-height))
+    (consumer-id (generate-offer-id tx-sender monthly-consumption block-height))
   )
     (asserts! (> max-price-willing u0) err-invalid-data)
     (asserts! (> monthly-consumption u0) err-invalid-data)
@@ -168,7 +168,7 @@
         sustainability-score: u0,
         total-purchased: u0,
         active-contracts: u0,
-        registered-at: stacks-block-height
+        registered-at: block-height
       }
     )
     
@@ -187,7 +187,7 @@
   (max-purchase uint))
   
   (let (
-    (offer-id (generate-offer-id tx-sender energy-amount stacks-block-height))
+    (offer-id (generate-offer-id tx-sender energy-amount block-height))
   )
     (asserts! (> energy-amount u0) err-invalid-data)
     (asserts! (> price-per-kwh u0) err-invalid-data)
@@ -203,12 +203,12 @@
         price-per-kwh: price-per-kwh,
         energy-type: energy-type,
         location: location,
-        expiry-block: (+ stacks-block-height expiry-blocks),
+        expiry-block: (+ block-height expiry-blocks),
         min-purchase: min-purchase,
         max-purchase: max-purchase,
         available-amount: energy-amount,
         status: "active",
-        created-at: stacks-block-height
+        created-at: block-height
       }
     )
     
@@ -236,7 +236,7 @@
     (platform-fees (calculate-platform-fee total-price))
   )
     (asserts! (is-eq (get status offer) "active") err-offer-inactive)
-    (asserts! (< stacks-block-height (get expiry-block offer)) err-offer-expired)
+    (asserts! (< block-height (get expiry-block offer)) err-offer-expired)
     (asserts! (>= energy-amount (get min-purchase offer)) err-invalid-data)
     (asserts! (<= energy-amount (get max-purchase offer)) err-invalid-data)
     (asserts! (<= energy-amount (get available-amount offer)) err-insufficient-energy)
@@ -254,7 +254,7 @@
         price-per-kwh: (get price-per-kwh offer),
         delivery-schedule: delivery-schedule,
         delivery-status: "scheduled",
-        timestamp: stacks-block-height,
+        timestamp: block-height,
         grid-fees: grid-fees,
         platform-fees: platform-fees
       }
@@ -298,7 +298,7 @@
   (auto-renewal bool))
   
   (let (
-    (contract-id (generate-offer-id tx-sender energy-amount stacks-block-height))
+    (contract-id (generate-offer-id tx-sender energy-amount block-height))
   )
     (asserts! (> energy-amount u0) err-invalid-data)
     (asserts! (> price-per-kwh u0) err-invalid-data)
@@ -315,8 +315,8 @@
         price-per-kwh: price-per-kwh,
         contract-duration: contract-duration,
         auto-renewal: auto-renewal,
-        start-date: stacks-block-height,
-        end-date: (+ stacks-block-height contract-duration),
+        start-date: block-height,
+        end-date: (+ block-height contract-duration),
         status: "pending"
       }
     )
@@ -370,44 +370,9 @@
   )
 )
 
-;; Record grid balancing data
-(define-public (record-grid-balancing
-  (grid-zone (string-ascii 16))
-  (total-supply uint)
-  (total-demand uint)
-  (peak-demand uint)
-  (renewable-percentage uint))
-  
-  (asserts! (is-eq tx-sender contract-owner) err-owner-only)
-  
-  (let (
-    (grid-stability (if (>= total-supply total-demand) u100 (/ (* total-supply u100) total-demand)))
-  )
-    (map-set grid-balancing
-      { grid-zone: grid-zone, timestamp: stacks-block-height }
-      {
-        total-supply: total-supply,
-        total-demand: total-demand,
-        peak-demand: peak-demand,
-        renewable-percentage: renewable-percentage,
-        grid-stability: grid-stability,
-        balancing-cost: (if (< grid-stability u95) u1000 u0),
-        emergency-reserves: (if (> total-supply total-demand) (- total-supply total-demand) u0)
-      }
-    )
-    
-    (ok true)
-  )
-)
+;; Grid balancing data recording removed for compatibility
 
-;; Update platform fee rate
-(define-public (update-platform-fee-rate (new-rate uint))
-  (asserts! (is-eq tx-sender contract-owner) err-owner-only)
-  (asserts! (<= new-rate u500) err-invalid-data) ;; Max 5% fee
-  
-  (var-set platform-fee-rate new-rate)
-  (ok new-rate)
-)
+;; Platform fee rate update removed for compatibility
 
 ;; Read-only Functions
 

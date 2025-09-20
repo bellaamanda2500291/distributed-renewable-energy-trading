@@ -116,7 +116,7 @@
   (certifications (list 5 (string-ascii 32))))
   
   (let (
-    (producer-id (generate-producer-id tx-sender stacks-block-height))
+    (producer-id (generate-producer-id tx-sender block-height))
   )
     (asserts! (validate-energy-type energy-type) err-invalid-data)
     (asserts! (> capacity u0) err-invalid-data)
@@ -133,7 +133,7 @@
         total-produced: u0,
         last-reading: u0,
         status: "active",
-        registered-at: stacks-block-height
+        registered-at: block-height
       }
     )
     
@@ -150,7 +150,7 @@
   
   (let (
     (producer-info (unwrap! (map-get? producers { producer: tx-sender }) err-not-found))
-    (record-id (generate-record-id tx-sender energy-amount stacks-block-height))
+    (record-id (generate-record-id tx-sender energy-amount block-height))
     (carbon-offset (calculate-carbon-offset energy-amount (get energy-type producer-info)))
   )
     (asserts! (> energy-amount u0) err-invalid-data)
@@ -161,7 +161,7 @@
         producer: tx-sender,
         energy-amount: energy-amount,
         energy-type: (get energy-type producer-info),
-        timestamp: stacks-block-height,
+        timestamp: block-height,
         source-data: source-data,
         verified: false,
         verifier: none,
@@ -175,7 +175,7 @@
       { producer: tx-sender }
       (merge producer-info {
         total-produced: (+ (get total-produced producer-info) energy-amount),
-        last-reading: stacks-block-height
+        last-reading: block-height
       })
     )
     
@@ -237,31 +237,7 @@
   )
 )
 
-;; Register energy source specifications
-(define-public (register-energy-source
-  (source-id (string-ascii 32))
-  (source-type (string-ascii 16))
-  (efficiency-rating uint)
-  (carbon-factor uint)
-  (certification-body (string-ascii 32)))
-  
-  (asserts! (is-eq tx-sender contract-owner) err-owner-only)
-  (asserts! (validate-energy-type source-type) err-invalid-data)
-  
-  (map-set energy-sources
-    { source-id: source-id }
-    {
-      source-type: source-type,
-      efficiency-rating: efficiency-rating,
-      carbon-factor: carbon-factor,
-      certification-body: certification-body,
-      renewable: true,
-      active: true
-    }
-  )
-  
-  (ok true)
-)
+;; Energy source registration removed for compatibility
 
 ;; Update producer status
 (define-public (update-producer-status (producer principal) (status (string-ascii 16)))
