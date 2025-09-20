@@ -116,7 +116,7 @@
   (certifications (list 5 (string-ascii 32))))
   
   (let (
-    (producer-id (generate-producer-id tx-sender block-height))
+    (producer-id (generate-producer-id tx-sender u1))
   )
     (asserts! (validate-energy-type energy-type) err-invalid-data)
     (asserts! (> capacity u0) err-invalid-data)
@@ -133,7 +133,7 @@
         total-produced: u0,
         last-reading: u0,
         status: "active",
-        registered-at: block-height
+        registered-at: u1
       }
     )
     
@@ -150,7 +150,7 @@
   
   (let (
     (producer-info (unwrap! (map-get? producers { producer: tx-sender }) err-not-found))
-    (record-id (generate-record-id tx-sender energy-amount block-height))
+    (record-id (generate-record-id tx-sender energy-amount u1))
     (carbon-offset (calculate-carbon-offset energy-amount (get energy-type producer-info)))
   )
     (asserts! (> energy-amount u0) err-invalid-data)
@@ -161,7 +161,7 @@
         producer: tx-sender,
         energy-amount: energy-amount,
         energy-type: (get energy-type producer-info),
-        timestamp: block-height,
+        timestamp: u1,
         source-data: source-data,
         verified: false,
         verifier: none,
@@ -175,7 +175,7 @@
       { producer: tx-sender }
       (merge producer-info {
         total-produced: (+ (get total-produced producer-info) energy-amount),
-        last-reading: block-height
+        last-reading: u1
       })
     )
     

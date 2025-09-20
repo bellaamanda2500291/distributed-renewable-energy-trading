@@ -151,7 +151,7 @@
   (location { latitude: uint, longitude: uint }))
   
   (let (
-    (consumer-id (generate-offer-id tx-sender monthly-consumption block-height))
+    (consumer-id (generate-offer-id tx-sender monthly-consumption u1))
   )
     (asserts! (> max-price-willing u0) err-invalid-data)
     (asserts! (> monthly-consumption u0) err-invalid-data)
@@ -168,7 +168,7 @@
         sustainability-score: u0,
         total-purchased: u0,
         active-contracts: u0,
-        registered-at: block-height
+        registered-at: u1
       }
     )
     
@@ -187,7 +187,7 @@
   (max-purchase uint))
   
   (let (
-    (offer-id (generate-offer-id tx-sender energy-amount block-height))
+    (offer-id (generate-offer-id tx-sender energy-amount u1))
   )
     (asserts! (> energy-amount u0) err-invalid-data)
     (asserts! (> price-per-kwh u0) err-invalid-data)
@@ -203,12 +203,12 @@
         price-per-kwh: price-per-kwh,
         energy-type: energy-type,
         location: location,
-        expiry-block: (+ block-height expiry-blocks),
+        expiry-block: (+ u1 expiry-blocks),
         min-purchase: min-purchase,
         max-purchase: max-purchase,
         available-amount: energy-amount,
         status: "active",
-        created-at: block-height
+        created-at: u1
       }
     )
     
@@ -236,7 +236,7 @@
     (platform-fees (calculate-platform-fee total-price))
   )
     (asserts! (is-eq (get status offer) "active") err-offer-inactive)
-    (asserts! (< block-height (get expiry-block offer)) err-offer-expired)
+    (asserts! (< u1 (get expiry-block offer)) err-offer-expired)
     (asserts! (>= energy-amount (get min-purchase offer)) err-invalid-data)
     (asserts! (<= energy-amount (get max-purchase offer)) err-invalid-data)
     (asserts! (<= energy-amount (get available-amount offer)) err-insufficient-energy)
@@ -254,7 +254,7 @@
         price-per-kwh: (get price-per-kwh offer),
         delivery-schedule: delivery-schedule,
         delivery-status: "scheduled",
-        timestamp: block-height,
+        timestamp: u1,
         grid-fees: grid-fees,
         platform-fees: platform-fees
       }
@@ -298,7 +298,7 @@
   (auto-renewal bool))
   
   (let (
-    (contract-id (generate-offer-id tx-sender energy-amount block-height))
+    (contract-id (generate-offer-id tx-sender energy-amount u1))
   )
     (asserts! (> energy-amount u0) err-invalid-data)
     (asserts! (> price-per-kwh u0) err-invalid-data)
@@ -315,8 +315,8 @@
         price-per-kwh: price-per-kwh,
         contract-duration: contract-duration,
         auto-renewal: auto-renewal,
-        start-date: block-height,
-        end-date: (+ block-height contract-duration),
+        start-date: u1,
+        end-date: (+ u1 contract-duration),
         status: "pending"
       }
     )
